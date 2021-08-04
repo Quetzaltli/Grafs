@@ -1,0 +1,197 @@
+
+```{r}
+library(sf)
+#library(raster)
+library(ggplot2)
+library(tidyverse)
+library(tmap)    # for static and interactive maps
+library(leaflet) # for interactive maps
+library(spData)
+vignette("sf1")
+```
+
+
+
+```{r}
+library(sp)
+world_sp=as(world, Class= "Spatial")
+world_sf= st_as_sf(world_sp)
+```
+
+```{r}
+names(world)
+```
+
+
+```{r}
+names(world)
+```
+
+```{r}
+sum(budget_by_region$`Anzahl Projekte`)
+```
+
+
+
+```{r}
+subregiongiza<-budget_by_region%>%
+  rename(subregion=Subregion)
+  #group_by(subregion)
+ # summarise(Numero=sum(`Auftragsvolumen in Euro`), Proyecto=sum(`Anzahl Projekte`))
+
+subregiongiz<- world%>%
+ dplyr::select(subregion)%>%
+  left_join(subregiongiza, by="subregion")%>%
+  group_by(subregion)%>%
+  summarise(Euros=sum(`Auftragsvolumen in Euro`), Proyecto=sum(`Anzahl Projekte`))
+
+
+GIZsr= tm_shape(subregiongiz)+ tm_polygons("subregion", palette = "Set2", showNA = FALSE) + tm_symbols(shape = 1, col = "black", size = "Euros") + tm_layout(bg.color = "lightblue", saturation = 1, legend.text.color = "Black", title = "", main.title = "GIZ in the world by Region", legend.position= c("left", "bottom") , main.title.color = "Dark Red", title.position = c("center", "bottom"), legend.text.size = .7,  title.size = 1, main.title.position = c("center", "top"))
+
+
+```
+
+
+```{r}
+GIZsr
+```
+```{r}
+
+library(treemap)
+GIZCHART<- Cuadro_giz%>%
+  group_by(Subregion, Subject)%>%
+  summarise(n=n())
+
+  
+  
+treemap(GIZCHART, index=c("Subject"), vSize="n", type="index",
+  border.col=c("black","white"),             # Color of borders of groups, of subgroups, of subsubgroups 
+    border.lwds=c(7,2)                         # Width of colors
+)
+
+```
+
+
+```{r}
+write.csv(subregiongiz, "subregiongiz.csv")
+```
+
+```{r}
+WBMundo<-world %>%
+  dplyr::select(name_long, iso_a2, continent)%>%
+  filter(continent %in% c("South America", "North America"))%>%
+  left_join(Latin_America_Map, by="name_long")
+```
+
+```{r}
+
+GIZ= tm_shape(WBMundo)+ tm_polygons("Euros", palette = "Reds", showNA = FALSE) + tm_layout(bg.color = "lightblue", saturation = 1, legend.text.color = "Black", title = "", main.title = "GIZ in America", legend.position= c("left", "bottom") , main.title.color = "Dark Red", title.position = c("center", "bottom"), legend.text.size = .7,  title.size = 1, main.title.position = c("center", "top")) +
+#+ tm_dots(size = "Projects") 
+#tm_symbols(size = "Projects")
+#tm_symbols(shape = 1, col = "black", size = "Projects") + 
+  tm_text("Projects", size=.5) + tm_g
+
+
+GIZ
+```
+
+
+```{r setup, include=FALSE}
+
+#write.csv(Mexiko, "Mexiko.csv")
+write.csv(Global_GIZ, "Global_GIZ.csv")
+
+
+```
+
+```{r}
+write.csv(Latin_America, "Latin_America.csv")
+```
+
+```{r}
+nombres<- WBMundo%>%
+  filter(continent %in% c("North America", "South America"))
+  
+ # WBMundo$name_long
+
+nombres$name_long
+```
+
+
+```{r}
+library(networkD3)
+ 
+# Load energy projection data
+URL <- "https://cdn.rawgit.com/christophergandrud/networkD3/master/JSONdata/energy.json"
+Energy <- jsonlite::fromJSON(URL)
+
+ 
+# Now we have 2 data frames: a 'links' data frame with 3 columns (from, to, value), and a 'nodes' data frame that gives the name of each node.
+head( Energy$links )
+head( Energy$nodes )
+ 
+# Thus we can plot it
+p <- sankeyNetwork(Links = Energy$links, Nodes = Energy$nodes, Source = "source",
+              Target = "target", Value = "value", NodeID = "name",
+              units = "TWh", fontSize = 12, nodeWidth = 30)
+Energy$links
+
+```
+
+```{r}
+Energy$links
+```
+
+
+```{r}
+
+ 
+# Now we have 2 data frames: a 'links' data frame with 3 columns (from, to, value), and a 'nodes' data frame that gives the name of each node.
+
+# Thus we can plot it
+
+library(networkD3)
+source<- as.data.frame(SourceBra)
+names<- as.data.frame(namesbra)
+
+p <- sankeyNetwork(Links = source, Nodes = names, Source = "Source",
+              Target = "Target", Value = "Value", NodeID = "Names",
+              units = "TWh", fontSize = 12, nodeWidth = 30)
+p
+```
+```{r}
+p
+```
+
+
+```{r}
+# save the widget
+library(htmlwidgets)
+saveWidget(p, file="sankeyGizBra.html")
+
+library(webshot)
+webshot("sankeyGizBra.html", "simpleNetwork.png")
+
+```
+
+```{r}
+GIztype<- GIZ_type_la%>%
+  filter(`Land/Region` %in% c("Brazil", "Mexico"))%>%
+  group_by(Type, Subtype)%>%
+  summarise(Numero=n())
+```
+```{r}
+sources<- as.data.frame(sourcebm)
+namese<- as.data.frame(namesbm)
+
+q <- sankeyNetwork(Links = sources, Nodes = namese, Source = "source",
+              Target = "target", Value = "value", NodeID = "names",
+              units = "TWh", fontSize = 12, nodeWidth = 30)
+q
+```
+```{r}
+library(htmlwidgets)
+saveWidget(q, file="BMGiz.html")
+
+```
+
